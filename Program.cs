@@ -2,11 +2,14 @@
 using System.Threading.Tasks;
 using Exam2_MustafaSenturk.Model;
 using Exam2_MustafaSenturk.Data;
+using System.Windows.Forms;
 
 namespace Exam2_MustafaSenturk
 {
     class CoffeeShop
     {
+
+        
 
         public static List<Order> OrdersInProgress = new List<Order>();
         public static List<int> DeliveredOrderIds = new List<int>();
@@ -16,8 +19,12 @@ namespace Exam2_MustafaSenturk
         public static List<CheckoutStation> EmptyStations = new List<CheckoutStation>();
         public static List<Task> RunningTasks = new();
 
+        [STAThread]
         static async Task Main(string[] args)
         {
+            ApplicationConfiguration.Initialize();
+            Application.Run(new Main());
+
             ShopWorker worker1 = new ShopWorker("Mali");
             ShopWorker worker2 = new ShopWorker("Turgut");
             ShopWorker worker3 = new ShopWorker("Harun");
