@@ -6,18 +6,21 @@ using System.Threading.Tasks;
 
 namespace Exam2_MustafaSenturk.Model
 {
-    public class CheckoutStation
+    public class CheckoutStation : ISpace
     {
-        private double _cashAmount = 0;
+        public double PosX { get; set; }
+        public double PosY { get; set; }
         public ShopWorker? _shopWorker = null;
+        private double _cashAmount = 0;
+
         private Order _order = new Order();
         public bool TakeControl(ShopWorker shopWorker)
         {
             if(_shopWorker == null)
             {
                 this._shopWorker = shopWorker;
-                CoffeeShop.AvailableStations.Add(this);
-                CoffeeShop.EmptyStations.Remove(this);
+                CoffeeShop.mainForm.AvailableStations.Add(this);
+                CoffeeShop.mainForm.EmptyStations.Remove(this);
                 return true;
             }
             return false;            
@@ -28,8 +31,8 @@ namespace Exam2_MustafaSenturk.Model
             if (_shopWorker == shopWorker)
             {
                 this._shopWorker = null;
-                CoffeeShop.AvailableStations.Remove(this);
-                CoffeeShop.EmptyStations.Add(this);
+                CoffeeShop.mainForm.AvailableStations.Remove(this);
+                CoffeeShop.mainForm.EmptyStations.Add(this);
                 return true;
             }
             return false;

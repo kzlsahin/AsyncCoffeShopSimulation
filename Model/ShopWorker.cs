@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 using Exam2_MustafaSenturk.Model;
 using Exam2_MustafaSenturk.Data;
 
 namespace Exam2_MustafaSenturk.Model
 {
-    public class ShopWorker
+    public class ShopWorker : Person
     {
-
-        public string Name { get; set; }
-
         private Order? _order = null;
 
         CheckoutStation? CheckoutStation = null;
@@ -25,17 +23,17 @@ namespace Exam2_MustafaSenturk.Model
             _isIdle = !_isIdle;
             if (_isIdle)
             {
-                CoffeeShop.IdleShopWorkers.Add(this);
+                CoffeeShop.mainForm.IdleShopWorkers.Add(this);
             }
             else
             {
-                CoffeeShop.IdleShopWorkers.Remove(this);
+                CoffeeShop.mainForm.IdleShopWorkers.Remove(this);
             }
         }
 
-        public ShopWorker(string name)
+        public ShopWorker(string name, Image image) : base(name, image)
         {
-            Name = name;
+           
         }
         public bool TakeControlOfCheckoutStation(CheckoutStation station)
         {
@@ -122,7 +120,7 @@ namespace Exam2_MustafaSenturk.Model
             int counter = 0;
             List<ProductType> productChoices = new();
 
-            foreach (KeyValuePair<ProductType, double> product in CoffeeShop.Products.productList)
+            foreach (KeyValuePair<ProductType, double> product in CoffeeShop.mainForm.Products.productList)
             {
                 choices += $"\n{counter++}. {product.Key} with price {product.Value} \n";
                 productChoices.Add(product.Key);
@@ -130,7 +128,7 @@ namespace Exam2_MustafaSenturk.Model
             int[] choiceIndicators = Enumerable.Range(0, counter).ToArray();
             choice = Dialogs.RequestEntry(choices, choiceIndicators);
 
-            Product slectedProduct = CoffeeShop.Products.GetProduct(productChoices[choice]);
+            Product slectedProduct = CoffeeShop.mainForm.Products.GetProduct(productChoices[choice]);
 
             _order.Products.Add(slectedProduct);
             ProceedAdditive(slectedProduct);
@@ -153,7 +151,7 @@ namespace Exam2_MustafaSenturk.Model
 
             int counter = 0;
             List<AdditiveType> additiveChoices = new();
-            foreach (KeyValuePair<AdditiveType, double> additive in CoffeeShop.Products.additiveList)
+            foreach (KeyValuePair<AdditiveType, double> additive in CoffeeShop.mainForm.Products.additiveList)
             {
                 choices += $"\n {counter++}. {additive.Key} with price {additive.Value} \n";
                 additiveChoices.Add(additive.Key);
@@ -161,7 +159,7 @@ namespace Exam2_MustafaSenturk.Model
             int[] choiceIndicators = Enumerable.Range(0, counter).ToArray();
             choice = Dialogs.RequestEntry(choices, choiceIndicators);
 
-            Additive slectedAdditive = CoffeeShop.Products.GetAdditive(additiveChoices[choice]);
+            Additive slectedAdditive = CoffeeShop.mainForm.Products.GetAdditive(additiveChoices[choice]);
 
             product.AddAdditive(slectedAdditive);
         }
@@ -183,7 +181,7 @@ namespace Exam2_MustafaSenturk.Model
         {
             if(_order != null)
             {
-                CoffeeShop.HandleOrder(_order, this);
+                CoffeeShop.mainForm.HandleOrder(_order, this);
                 _order = null;
             }
         }
@@ -208,16 +206,16 @@ namespace Exam2_MustafaSenturk.Model
 
         private void DeliverOrder(Order order)
         {            
-            CoffeeShop.DeliverOrder(order);
+            CoffeeShop.mainForm.DeliverOrder(order);
             Console.WriteLine($"worker {this.Name} complated order {order.OrderId}");
         }
 
         private void CheckForEmptStation()
         {
-            bool isThereEmptyStation = CoffeeShop.EmptyStations.Count() > 0;
+            bool isThereEmptyStation = CoffeeShop.mainForm.EmptyStations.Count() > 0;
             if (isThereEmptyStation)
             {
-                TakeControlOfCheckoutStation(CoffeeShop.EmptyStations[0]);
+                TakeControlOfCheckoutStation(CoffeeShop.mainForm.EmptyStations[0]);
             }
         }
     }
