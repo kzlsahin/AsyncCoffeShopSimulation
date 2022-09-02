@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ExplorerBar;
 
 namespace Exam2_MustafaSenturk
 {
@@ -30,6 +31,7 @@ namespace Exam2_MustafaSenturk
         public static SpaceEngine spaceEngine = new SpaceEngine();
         int counter = 0;
 
+        
         public Main()
         {
             InitializeComponent();
@@ -37,6 +39,9 @@ namespace Exam2_MustafaSenturk
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle( ControlStyles.OptimizedDoubleBuffer, true);
+
+            this.BackgroundImage = Properties.Resources.mekan;
+            this.ClientSize = new Size(BackgroundImage.Width, BackgroundImage.Height);
 
             graphicsTimer = new System.Windows.Forms.Timer();
             graphicsTimer.Interval = 100;
@@ -59,16 +64,16 @@ namespace Exam2_MustafaSenturk
                 worker1, worker2, worker3, worker4, worker5
             };
 
-            worker1.PosX = 140;
-            worker1.PosY = 200;
-            worker2.PosX = 140;
-            worker2.PosY = 150;
-            worker3.PosX = 140;
-            worker3.PosY = 240;
-            worker4.PosX = 180;
-            worker4.PosY = 240;
-            worker5.PosX = 100;
-            worker5.PosY = 240;
+            worker1.PosX = 100;
+            worker1.PosY = 260;
+            worker2.PosX = 200;
+            worker2.PosY = 260;
+            worker3.PosX = 240;
+            worker3.PosY = 260;
+            worker4.PosX = 140;
+            worker4.PosY = 140;
+            worker5.PosX = 240;
+            worker5.PosY = 140;
 
 
             CheckoutStation station1 = new();
@@ -112,7 +117,10 @@ namespace Exam2_MustafaSenturk
             assets.Add(asset);
         }
 
-
+        private void RenderBackground(Graphics gfx)
+        {
+            gfx.DrawImage(BackgroundImage, new RectangleF(0, 0, this.Width, this.Height));
+        }
         private void RenderAssets(Graphics gfx)
         {
             foreach(IAsset asset in assets)
@@ -120,14 +128,11 @@ namespace Exam2_MustafaSenturk
                 gfx.DrawImage(asset.Image, new RectangleF(asset.PosX, asset.PosY, asset.Image.Width, asset.Image.Height));
             }
         }
-        private void button1_Click(object sender, EventArgs e)
-        {
-        }
+
 
         private void TimeTicked(object sender, EventArgs e)
         {
             counter++;
-            button1.Text = "" + counter;
             foreach (IAsset asset in assets)
             {
                 asset.PosX += 1;
@@ -164,6 +169,7 @@ namespace Exam2_MustafaSenturk
 
         private void Main_Paint(object sender, PaintEventArgs e)
         {
+            //RenderBackground(e.Graphics);
             RenderAssets(e.Graphics);
         }
     }
