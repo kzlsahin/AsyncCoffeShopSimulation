@@ -11,6 +11,7 @@ namespace Exam2_MustafaSenturk.Model
 {
     public class ShopWorker : Person
     {
+        Shop Shop { get; set; }
         private Order? _order = null;
 
         CheckoutStation? CheckoutStation = null;
@@ -23,17 +24,17 @@ namespace Exam2_MustafaSenturk.Model
             _isIdle = !_isIdle;
             if (_isIdle)
             {
-                CoffeeShop.mainForm.IdleShopWorkers.Add(this);
+                Shop.IdleShopWorkers.Add(this);
             }
             else
             {
-                CoffeeShop.mainForm.IdleShopWorkers.Remove(this);
+                Shop.IdleShopWorkers.Remove(this);
             }
         }
 
-        public ShopWorker(string name, Image image) : base(name, image)
+        public ShopWorker(string name, Image image, Shop shop) : base(name, image)
         {
-           
+            Shop = shop;
         }
         public bool TakeControlOfCheckoutStation(CheckoutStation station)
         {
@@ -120,7 +121,7 @@ namespace Exam2_MustafaSenturk.Model
             int counter = 0;
             List<ProductType> productChoices = new();
 
-            foreach (KeyValuePair<ProductType, double> product in CoffeeShop.mainForm.Products.productList)
+            foreach (KeyValuePair<ProductType, double> product in Shop.Products.productList)
             {
                 choices += $"\n{counter++}. {product.Key} with price {product.Value} \n";
                 productChoices.Add(product.Key);
@@ -128,7 +129,7 @@ namespace Exam2_MustafaSenturk.Model
             int[] choiceIndicators = Enumerable.Range(0, counter).ToArray();
             choice = Dialogs.RequestEntry(choices, choiceIndicators);
 
-            Product slectedProduct = CoffeeShop.mainForm.Products.GetProduct(productChoices[choice]);
+            Product slectedProduct = Shop.Products.GetProduct(productChoices[choice]);
 
             _order.Products.Add(slectedProduct);
             ProceedAdditive(slectedProduct);
@@ -151,7 +152,7 @@ namespace Exam2_MustafaSenturk.Model
 
             int counter = 0;
             List<AdditiveType> additiveChoices = new();
-            foreach (KeyValuePair<AdditiveType, double> additive in CoffeeShop.mainForm.Products.additiveList)
+            foreach (KeyValuePair<AdditiveType, double> additive in Shop.Products.additiveList)
             {
                 choices += $"\n {counter++}. {additive.Key} with price {additive.Value} \n";
                 additiveChoices.Add(additive.Key);
@@ -159,7 +160,7 @@ namespace Exam2_MustafaSenturk.Model
             int[] choiceIndicators = Enumerable.Range(0, counter).ToArray();
             choice = Dialogs.RequestEntry(choices, choiceIndicators);
 
-            Additive slectedAdditive = CoffeeShop.mainForm.Products.GetAdditive(additiveChoices[choice]);
+            Additive slectedAdditive = Shop.Products.GetAdditive(additiveChoices[choice]);
 
             product.AddAdditive(slectedAdditive);
         }
@@ -181,7 +182,7 @@ namespace Exam2_MustafaSenturk.Model
         {
             if(_order != null)
             {
-                CoffeeShop.mainForm.HandleOrder(_order, this);
+                Shop.HandleOrder(_order, this);
                 _order = null;
             }
         }
@@ -192,30 +193,49 @@ namespace Exam2_MustafaSenturk.Model
                 leaveControlOFCheckoutStation();
             }
             TogleIdleStatus();
-            foreach (Product product in order.Products)
+            /*foreach (Product product in order.Products)
             {
                 Console.WriteLine($"\n < {this.Name} is preparing {product.productName} > \n  for the order of {order.OwnerName}\n");
                 await Task.Delay(product.ProductionTime);
-            }
-
-            Console.WriteLine($"order for {order.OwnerName} is ready to be taken");
+            }*/
+            await Task.Delay(2000);
+            Say($"order for Me or You is ready to be taken");
             DeliverOrder(order);
+            TogleIdleStatus();
+            CheckForEmptStation();
+        }
+        public async Task PrepareOrder()
+        {
+            if (CheckoutStation != null)
+            {
+                leaveControlOFCheckoutStation();
+            }
+            TogleIdleStatus();
+            /*foreach (Product product in order.Products)
+            {
+                Console.WriteLine($"\n < {this.Name} is preparing {product.productName} > \n  for the order of {order.OwnerName}\n");
+                await Task.Delay(product.ProductionTime);
+            }*/
+            await Task.Delay(2000);
+            Say($"\n    order is Ruined \n Auuugh !!!!");
+            await Task.Delay(4000);
+            Say($"\n    order for Me or You is ready to be taken");
             TogleIdleStatus();
             CheckForEmptStation();
         }
 
         private void DeliverOrder(Order order)
-        {            
-            CoffeeShop.mainForm.DeliverOrder(order);
+        {
+            Shop.DeliverOrder(order);
             Console.WriteLine($"worker {this.Name} complated order {order.OrderId}");
         }
 
         private void CheckForEmptStation()
         {
-            bool isThereEmptyStation = CoffeeShop.mainForm.EmptyStations.Count() > 0;
+            bool isThereEmptyStation = Shop.EmptyStations.Count() > 0;
             if (isThereEmptyStation)
             {
-                TakeControlOfCheckoutStation(CoffeeShop.mainForm.EmptyStations[0]);
+                TakeControlOfCheckoutStation(Shop.EmptyStations[0]);
             }
         }
     }

@@ -63,6 +63,16 @@ namespace Exam2_MustafaSenturk.Properties {
         /// <summary>
         ///   System.Drawing.Bitmap türünde yerelleştirilmiş bir kaynak arar.
         /// </summary>
+        internal static System.Drawing.Bitmap DialogBuble_x128 {
+            get {
+                object obj = ResourceManager.GetObject("DialogBuble_x128", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap türünde yerelleştirilmiş bir kaynak arar.
+        /// </summary>
         internal static System.Drawing.Bitmap mekan {
             get {
                 object obj = ResourceManager.GetObject("mekan", resourceCulture);

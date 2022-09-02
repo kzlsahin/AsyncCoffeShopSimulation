@@ -8,19 +8,25 @@ namespace Exam2_MustafaSenturk.Model
 {
     public class CheckoutStation : ISpace
     {
+        Shop Shop { get; set; }
         public double PosX { get; set; }
         public double PosY { get; set; }
         public ShopWorker? _shopWorker = null;
         private double _cashAmount = 0;
 
         private Order _order = new Order();
+
+        public CheckoutStation(Shop shop)
+        { 
+            Shop = shop;
+        }
         public bool TakeControl(ShopWorker shopWorker)
         {
             if(_shopWorker == null)
             {
                 this._shopWorker = shopWorker;
-                CoffeeShop.mainForm.AvailableStations.Add(this);
-                CoffeeShop.mainForm.EmptyStations.Remove(this);
+                Shop.AvailableStations.Add(this);
+                Shop.EmptyStations.Remove(this);
                 return true;
             }
             return false;            
@@ -31,8 +37,8 @@ namespace Exam2_MustafaSenturk.Model
             if (_shopWorker == shopWorker)
             {
                 this._shopWorker = null;
-                CoffeeShop.mainForm.AvailableStations.Remove(this);
-                CoffeeShop.mainForm.EmptyStations.Add(this);
+                Shop.AvailableStations.Remove(this);
+                Shop.EmptyStations.Add(this);
                 return true;
             }
             return false;

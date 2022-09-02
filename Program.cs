@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace Exam2_MustafaSenturk
 {
-    class CoffeeShop
+    class Program
     {
         public static Main mainForm = new();
         [STAThread]
