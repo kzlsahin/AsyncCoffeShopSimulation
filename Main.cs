@@ -16,7 +16,7 @@ namespace Exam2_MustafaSenturk
 {
     public partial class Main : Form
     {
-        public List<IAsset> assets {get; set;}
+        public List<IAsset> assets { get; } = new();
 
         Shop coffeeShop;
 
@@ -37,11 +37,11 @@ namespace Exam2_MustafaSenturk
 
             coffeeShop = new Shop(this);
 
-            this.BackgroundImage = Properties.Resources.mekan;
+            this.BackgroundImage = Properties.PublishProfiles.Resources.mekan;
             this.ClientSize = new Size(BackgroundImage.Width, BackgroundImage.Height);
 
             graphicsTimer = new System.Windows.Forms.Timer();
-            graphicsTimer.Interval = 1000/60;
+            graphicsTimer.Interval = 1000/25;
             graphicsTimer.Tick += TimeTicked;
             graphicsTimer.Start();
         }
@@ -52,6 +52,14 @@ namespace Exam2_MustafaSenturk
         public void AddAssetToScene(IAsset asset)
         {
             assets.Add(asset);
+        }
+
+        public void AddAssetsToScene(List<IAsset> assets)
+        {
+            foreach(IAsset asset in assets)
+            {
+                AddAssetToScene(asset);
+            }
         }
 
         private void RenderAssets(Graphics gfx)
@@ -66,7 +74,7 @@ namespace Exam2_MustafaSenturk
         private void TimeTicked(object sender, EventArgs e)
         {
             counter++;
-            coffeeShop.TimeNext();
+            coffeeShop.TimeNext(counter);
             Invalidate();
         }
        

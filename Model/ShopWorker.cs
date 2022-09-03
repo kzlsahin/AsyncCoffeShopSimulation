@@ -16,8 +16,8 @@ namespace Exam2_MustafaSenturk.Model
 
         CheckoutStation? CheckoutStation = null;
 
-        private bool _isIdle = true;        
-        public bool IsIdle { get => _isIdle;  }
+        private bool _isIdle = true;
+        public bool IsIdle { get => _isIdle; }
 
         private void TogleIdleStatus()
         {
@@ -34,16 +34,28 @@ namespace Exam2_MustafaSenturk.Model
 
         public ShopWorker(string name, Image image, Shop shop) : base(name, image)
         {
+            this.AddDialogBuble(image = Properties.PublishProfiles.Resources.DialogBuble_x64);
             Shop = shop;
+            Say($"Tezgahta bekliyorum");
         }
-        public bool TakeControlOfCheckoutStation(CheckoutStation station)
+        public bool TakeControlOfCheckoutStation(CheckoutStation? station = null)
         {
-            TogleIdleStatus();
+            if (station == null)
+            {
+                station = CheckForEmptyStation();
+            }
+            if(station == null)
+            {
+                return false;
+            }
+            
             bool isControlTaken = station.TakeControl(this);
 
             if (isControlTaken)
             {
                 CheckoutStation = station;
+                this.Shop.SendAssetToSpace(this, station);
+                Say("Kasada Bekliyorum");
                 return true;
             }
             return false;
@@ -51,13 +63,13 @@ namespace Exam2_MustafaSenturk.Model
 
         public bool leaveControlOFCheckoutStation()
         {
-            TogleIdleStatus();
             if (CheckoutStation != null)
             {
                 CheckoutStation.LeaveControl(this);
                 CheckoutStation = null;
+                Say("Kasayı Bıraktım");
                 return true;
-            }
+            }        
             return false;
         }
         public void requestAttention()
@@ -65,8 +77,22 @@ namespace Exam2_MustafaSenturk.Model
             RequestIntention();
         }
 
+        public void GoToKitchen()
+        {
+            leaveControlOFCheckoutStation();
+            if (this.Shop.GoToFreeSpace(this))
+            {
+                Say("Tezgahta Bekliyorum");
+            }
+        }
 
-        private void RequestIntention( bool afterUnresolvedAnswer = false)
+        private CheckoutStation? CheckForEmptyStation()
+        {
+            CheckoutStation? station = this.Shop.GetEmptyStation();
+            return station;
+
+        }
+        private void RequestIntention(bool afterUnresolvedAnswer = false)
         {
             int choice;
             string choices;
@@ -81,7 +107,7 @@ namespace Exam2_MustafaSenturk.Model
                 Console.WriteLine("    GREETİNGS! Hi! :))  ");
                 Console.WriteLine($"   my name is {this.Name}.\n   How can I help you?");
                 Console.WriteLine("   May I have your NAME ?");
-                clientName = Console.ReadLine()  ?? "noName";
+                clientName = Console.ReadLine() ?? "noName";
             }
 
             choices = "\n 1. I'd like to order \n 2. Never mind, thank you. \n";
@@ -101,7 +127,7 @@ namespace Exam2_MustafaSenturk.Model
         }
 
         private void TakeOrder(string clientName)
-        {            
+        {
             _order = new Order();
             _order.OwnerName = clientName;
             AskProduct();
@@ -173,21 +199,21 @@ namespace Exam2_MustafaSenturk.Model
             {
                 return;
             }
-            Console.WriteLine( $"I'm taking cash. The price is {_order.Price()} ");
-            CheckoutStation.PayCheck( _order.Price() );
+            Console.WriteLine($"I'm taking cash. The price is {_order.Price()} ");
+            CheckoutStation.PayCheck(_order.Price());
             Console.WriteLine("Thank you! You can wait fo your order there.");
         }
 
         private void HandleOrder()
         {
-            if(_order != null)
+            if (_order != null)
             {
                 Shop.HandleOrder(_order, this);
                 _order = null;
             }
         }
         public async Task PrepareOrder(Order order)
-        {            
+        {
             if (CheckoutStation != null)
             {
                 leaveControlOFCheckoutStation();
@@ -202,7 +228,7 @@ namespace Exam2_MustafaSenturk.Model
             Say($"order for Me or You is ready to be taken");
             DeliverOrder(order);
             TogleIdleStatus();
-            CheckForEmptStation();
+            CheckForEmptyStation();
         }
         public async Task PrepareOrder()
         {
@@ -221,7 +247,7 @@ namespace Exam2_MustafaSenturk.Model
             await Task.Delay(4000);
             Say($"\n    order for Me or You is ready to be taken");
             TogleIdleStatus();
-            CheckForEmptStation();
+            CheckForEmptyStation();
         }
 
         private void DeliverOrder(Order order)
@@ -230,13 +256,6 @@ namespace Exam2_MustafaSenturk.Model
             Console.WriteLine($"worker {this.Name} complated order {order.OrderId}");
         }
 
-        private void CheckForEmptStation()
-        {
-            bool isThereEmptyStation = Shop.EmptyStations.Count() > 0;
-            if (isThereEmptyStation)
-            {
-                TakeControlOfCheckoutStation(Shop.EmptyStations[0]);
-            }
-        }
+
     }
 }

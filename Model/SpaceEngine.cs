@@ -18,7 +18,7 @@ namespace Exam2_MustafaSenturk.Model
         private bool _isRunning = false;
 
         int counter = 0;
-        public void InitAssetPoses(double PosX, double PosY)
+        public void InitAssetPoses(float PosX, float PosY)
         {
 
         }
@@ -28,12 +28,29 @@ namespace Exam2_MustafaSenturk.Model
             assets.Add(asset);
         }
 
-
-        public void AddSpace(ISpace space, double PosX, double PosY)
+        public void AddAssets(List<IAsset> assets)
+        {
+            foreach(IAsset asset in assets)
+            {
+                AddAsset(asset);
+            }
+        }
+        public void AddSpace(ISpace space, float PosX, float PosY)
         {
             space.PosX = PosX;
             space.PosY = PosY;
             this.spaces.Add(space);
+        }
+        public void AddSpace(ISpace space)
+        {
+            this.spaces.Add(space);
+        }
+        public void AddSpaces(List<ISpace> spaces)
+        {
+            foreach(ISpace space in spaces)
+            {
+                this.spaces.Add(space);
+            }            
         }
         public void AddDestination(IAsset asset, ISpace space)
         {
@@ -43,17 +60,14 @@ namespace Exam2_MustafaSenturk.Model
         private void MoveAssets()
         {
             ISpace destination;
-            int i = 0;
             foreach (IAsset asset in assets)
             {
-                if (!Movements.ContainsKey(asset)) return;
+                if (!Movements.ContainsKey(asset)) continue;
                 destination = Movements[asset];
-                if(Math.Abs(asset.PosX - destination.PosX) < 2*asset.PaceLength && Math.Abs(asset.PosY - destination.PosY) < 2 * asset.PaceLength)
+                if(Math.Abs(asset.PosX - destination.PosX) <= asset.PaceLength && Math.Abs(asset.PosY - destination.PosY) <= asset.PaceLength)
                 {
-                    counter++;
-                    //Movements.Remove(asset);
-                    Movements[asset] = spaces[(counter + i) % spaces.Count()];
-                    asset.Move((float)destination.PosX, (float)destination.PosY);
+                    asset.CurrentSpace = destination;
+                    Movements.Remove(asset);
                 }
                 else
                 {
@@ -83,10 +97,5 @@ namespace Exam2_MustafaSenturk.Model
         }
     }
 
-    public interface ISpace
-    {
-        public double PosX { get; set; }
-        public double PosY { get; set; }
-    }
 
 }
