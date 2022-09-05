@@ -102,25 +102,32 @@ namespace Exam2_MustafaSenturk.Model
             IdleShopWorkers.Add(worker4);
             IdleShopWorkers.Add(worker5);
 
-            ActivateClients();
-
+          
             Task.Run( async () =>
             {
+                Task.Delay(2000);
+                ActivateClients();
+
                 ClientPerson client;
                 await Task.Delay(5000);
-                worker3.GoToKitchen();
-                await Task.Delay(5000);
-                worker4.TakeControlOfCheckoutStation();
-                await Task.Delay(5000);
-                worker1.GoToKitchen();
+                
                 client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
                 client.Go();
                 await Task.Delay(5000);
-                worker2.GoToKitchen();
+                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
+
                 await Task.Delay(5000);
-                worker4.GoToKitchen();
+                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
+
                 await Task.Delay(5000);
-                worker3.TakeControlOfCheckoutStation();
+                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
+
+                await Task.Delay(5000);
+                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
 
 
             }

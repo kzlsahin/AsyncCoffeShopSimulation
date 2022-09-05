@@ -7,6 +7,14 @@ using System.Drawing;
 
 namespace Exam2_MustafaSenturk.Model
 {   
+    public interface IAnswerer
+    {
+        public Task<string> Answer(string[] choices);
+    }
+    public interface IAsker
+    {
+        public Task<string> Ask(IAnswerer answerer, string message, string[] options);
+    }
     public interface IAsset
     {
         public float PosX { get; set; }

@@ -36,7 +36,7 @@ namespace Exam2_MustafaSenturk.Model
         {
             this.AddDialogBuble(image = Properties.PublishProfiles.Resources.DialogBuble_x64);
             Shop = shop;
-            Say($"Tezgahta bekliyorum");
+            Say($"My name is {Name}");
         }
         public bool TakeControlOfCheckoutStation(CheckoutStation? station = null)
         {
@@ -55,7 +55,6 @@ namespace Exam2_MustafaSenturk.Model
             {
                 CheckoutStation = station;
                 this.Shop.SendAssetToSpace(this, station);
-                Say("Kasada Bekliyorum");
                 return true;
             }
             return false;
@@ -67,14 +66,28 @@ namespace Exam2_MustafaSenturk.Model
             {
                 CheckoutStation.LeaveControl(this);
                 CheckoutStation = null;
-                Say("Kasayı Bıraktım");
                 return true;
             }        
             return false;
         }
-        public void requestAttention()
+        public async Task requestAttention(IAnswerer client)
         {
-            RequestIntention();
+            TogleIdleStatus();
+            await Ask(client, "How Can I Help you?", new string[] { "I want to order." } );
+
+            int choice;
+            string choices;
+            string clientName = "noName";
+
+            clientName = await Ask(client, "How Can I Help you?", new string[] { ((Person)client).Name });
+            Order order = new Order();
+            this._order = order;
+            this._order.OwnerName = clientName;
+            this.CheckoutStation.RegisterNewOrder(order, this);
+            await AskProduct(client);
+            //await GetPayment(client);
+            HandleOrder();
+            TogleIdleStatus();
         }
 
         public void GoToKitchen()
@@ -82,7 +95,7 @@ namespace Exam2_MustafaSenturk.Model
             leaveControlOFCheckoutStation();
             if (this.Shop.GoToFreeSpace(this))
             {
-                Say("Tezgahta Bekliyorum");
+                //Say("Tezgahta Bekliyorum");
             }
         }
 
@@ -92,116 +105,72 @@ namespace Exam2_MustafaSenturk.Model
             return station;
 
         }
-        private void RequestIntention(bool afterUnresolvedAnswer = false)
+
+        private async Task AskProduct(IAnswerer client)
         {
-            int choice;
-            string choices;
-            string clientName = "noName";
-
-            if (afterUnresolvedAnswer)
+            if (_order == null || CheckoutStation == null)
             {
-                Console.WriteLine("I'm sorry, may you repeat");
+                return;
             }
-            else
-            {
-                Console.WriteLine("    GREETİNGS! Hi! :))  ");
-                Console.WriteLine($"   my name is {this.Name}.\n   How can I help you?");
-                Console.WriteLine("   May I have your NAME ?");
-                clientName = Console.ReadLine() ?? "noName";
-            }
+            string choice;
 
-            choices = "\n 1. I'd like to order \n 2. Never mind, thank you. \n";
-            choice = Dialogs.RequestEntry(choices, new int[] { 1, 2 });
-            switch (choice)
-            {
-                case 1:
-                    TakeOrder(clientName);
-                    break;
-                case 2:
-                    Console.WriteLine("No problem, see you!");
-                    break;
-                default:
-                    RequestIntention(true);
-                    break;
-            }
-        }
-
-        private void TakeOrder(string clientName)
-        {
-            _order = new Order();
-            _order.OwnerName = clientName;
-            AskProduct();
-            GetPayment();
-            HandleOrder();
-        }
-
-        private void AskProduct()
-        {
-            Console.Clear();
-            Console.WriteLine("\n\n");
-            int choice;
-            string choices = "";
-
-            Console.WriteLine("  We have these products.\n   Which one would you like?");
-
-            int counter = 0;
-            List<ProductType> productChoices = new();
-
+            Say("  We have these products.\n   Which one would you like?");
+            await Task.Delay(1000);
+            List<string> productChoices = new();
+            int counter = 1;
             foreach (KeyValuePair<ProductType, double> product in Shop.Products.productList)
             {
-                choices += $"\n{counter++}. {product.Key} with price {product.Value} \n";
-                productChoices.Add(product.Key);
+                await Task.Delay(800);
+                Say($"\n{counter++}. {product.Key} with price {product.Value} \n");
+                productChoices.Add(product.Key.ToString());
             }
-            int[] choiceIndicators = Enumerable.Range(0, counter).ToArray();
-            choice = Dialogs.RequestEntry(choices, choiceIndicators);
 
-            Product slectedProduct = Shop.Products.GetProduct(productChoices[choice]);
+            choice = await Ask(client, "what is your choice?", productChoices.ToArray() );
 
-            _order.Products.Add(slectedProduct);
-            ProceedAdditive(slectedProduct);
-            CheckoutStation.RegisterNewOrder(_order, this);
+            Product slectedProduct = Shop.Products.GetProduct( (ProductType) Enum.Parse(typeof(ProductType), choice));
+            Say($"selected product {choice}");
+            await Task.Delay(2000);
+            this._order.Products.Add(slectedProduct);
+            await ProceedAdditive(client, slectedProduct);
+            
         }
 
-        private void ProceedAdditive(Product product)
+        private async Task ProceedAdditive(IAnswerer client, Product product)
         {
-            Console.Clear();
-            Console.WriteLine("\n\n");
             if (_order == null)
             {
                 return;
             }
-            int choice;
-            string choices = "";
+            string choice;
 
-            Console.WriteLine("And Additives?");
-            Console.WriteLine("Would you like additives?");
+            Say("And Additives?");
+            Say("Would you like additives?");
 
-            int counter = 0;
-            List<AdditiveType> additiveChoices = new();
+            int counter = 1;
+            List<string> additiveChoices = new();
             foreach (KeyValuePair<AdditiveType, double> additive in Shop.Products.additiveList)
             {
-                choices += $"\n {counter++}. {additive.Key} with price {additive.Value} \n";
-                additiveChoices.Add(additive.Key);
+                Say($"\n {counter++}. {additive.Key} with price {additive.Value} \n");
+                additiveChoices.Add(additive.Key.ToString() );
             }
             int[] choiceIndicators = Enumerable.Range(0, counter).ToArray();
-            choice = Dialogs.RequestEntry(choices, choiceIndicators);
 
-            Additive slectedAdditive = Shop.Products.GetAdditive(additiveChoices[choice]);
+            choice = await Ask(client, "what is your choice?", additiveChoices.ToArray());
+
+            Additive slectedAdditive = Shop.Products.GetAdditive((AdditiveType)Enum.Parse(typeof(AdditiveType), choice));
 
             product.AddAdditive(slectedAdditive);
         }
 
-        private void GetPayment()
+        private async Task GetPayment(IAnswerer client)
         {
-            Console.Clear();
-            Console.WriteLine("\n\n");
             if (_order == null)
             {
                 return;
             }
-            Console.WriteLine($"I'm taking cash. The price is {_order.Price()} ");
+            Say($"I'm taking cash. The price is {_order.Price()} ");
             CheckoutStation.PayCheck(_order.Price());
-            Console.WriteLine("Thank you! You can wait fo your order there.");
+            await Ask(client, "You can wait there.", new string[] { "OK! No problem." } );
         }
 
         private void HandleOrder()
@@ -224,36 +193,21 @@ namespace Exam2_MustafaSenturk.Model
                 Console.WriteLine($"\n < {this.Name} is preparing {product.productName} > \n  for the order of {order.OwnerName}\n");
                 await Task.Delay(product.ProductionTime);
             }*/
-            await Task.Delay(2000);
-            Say($"order for Me or You is ready to be taken");
-            DeliverOrder(order);
+            GoToKitchen();
+            Say($"I'm working for order of {order.OwnerName}");
+            await Task.Delay(12000);
+            await DeliverOrder(order);
             TogleIdleStatus();
-            CheckForEmptyStation();
-        }
-        public async Task PrepareOrder()
-        {
-            if (CheckoutStation != null)
+            CheckoutStation? station = CheckForEmptyStation();
+            if(station != null)
             {
-                leaveControlOFCheckoutStation();
+                TakeControlOfCheckoutStation(station);
             }
-            TogleIdleStatus();
-            /*foreach (Product product in order.Products)
-            {
-                Console.WriteLine($"\n < {this.Name} is preparing {product.productName} > \n  for the order of {order.OwnerName}\n");
-                await Task.Delay(product.ProductionTime);
-            }*/
-            await Task.Delay(2000);
-            Say($"\n    order is Ruined \n Auuugh !!!!");
-            await Task.Delay(4000);
-            Say($"\n    order for Me or You is ready to be taken");
-            TogleIdleStatus();
-            CheckForEmptyStation();
         }
-
-        private void DeliverOrder(Order order)
+        private async Task DeliverOrder(Order order)
         {
             Shop.DeliverOrder(order);
-            Console.WriteLine($"worker {this.Name} complated order {order.OrderId}");
+            Say($"complated order {order.OrderId}");
         }
 
 

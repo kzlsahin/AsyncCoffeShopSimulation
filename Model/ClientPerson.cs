@@ -10,6 +10,7 @@ namespace Exam2_MustafaSenturk.Model
     {
         Shop Shop { get; set; }
 
+        CheckoutStation? CheckoutStation = null;
         public ClientPerson(string name, Image image, Shop shop) : base(name, image)
         {
             this.AddDialogBuble(Properties.PublishProfiles.Resources.DialogBuble_x64);
@@ -20,9 +21,38 @@ namespace Exam2_MustafaSenturk.Model
         }
         public async void Go()
         {
-            await this.GoToAvailableStation();
+            var station = await this.GoToAvailableStation();
+            this.CheckoutStation = station;
+            await Task.Delay(1500);
+            string answer = String.Empty;
+            string[] options = new string[] { "yes!"};
+            if (this.CheckoutStation != null)
+            {
+                answer = await Ask(station._shopWorker, "Hi!\n May I ask", options);
+
+                switch (answer)
+                {
+                    case "yes!":
+                        Say("Thank youu!");
+                        StartOrdering(station._shopWorker);
+                        break;
+                    case "Sorry!":
+                        Say(Dialogs.GetRaction(Dialogs.Reactions.Annoyed));
+                        break;
+                }
+            }
         }
-        public async Task GoToAvailableStation()
+
+        public async void StartOrdering(ShopWorker worker)
+        {
+            await worker.requestAttention(this);
+            Shop.SendAssetToSpace(this, new Space(this.PosX - 100, this.PosY + 300, SpaceStatus.Free));
+            CheckoutStation.ClientSpace.Status = SpaceStatus.Free;
+            CheckoutStation = null;
+            Say("Thanks !");
+        }
+
+        public async Task<CheckoutStation?> GoToAvailableStation()
         {
             await Task.Delay(1000);
             CheckoutStation? station = this.Shop.GetAvailableStationForClients();
@@ -30,9 +60,10 @@ namespace Exam2_MustafaSenturk.Model
             {
                 await Task.Delay(2000);
                 await GoToAvailableStation();
-                return;
+                return null;
             }
             this.Shop.SendAssetToSpace(this, station.ClientSpace);
+            return station;
         }
     }
 }

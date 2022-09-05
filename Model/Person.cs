@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Exam2_MustafaSenturk.Model
 {
-    public class Person : IAsset
+    public class Person : IAsset, IAsker, IAnswerer
     {
         public string Name { get; set; }
         public float PosX { get; set; }
         public float PosY { get; set; }
         public Direction direction { get; set; } = Direction.Down;
-        public double PaceLength { get; set; } = 2;
+        public double PaceLength { get; set; } = 5;
         public Image Image { get; set; }
         public ISpace CurrentSpace { get; set; } = Space.EmptySpace;
         public string Speech { get; set; } = string.Empty;
@@ -108,6 +108,25 @@ namespace Exam2_MustafaSenturk.Model
             gfx.DrawImage(Image, new RectangleF(PosX, PosY, Image.Width, Image.Height));
             dialogBubble?.Render(gfx);
             }
+        }
+        public async Task<string> Answer(string[] choices)
+        {
+            await Task.Delay(1500);
+            if (choices.Length == 0)
+            {
+                return Dialogs.GetRaction(Dialogs.Reactions.Annoyed);
+            }
+            int i = Dialogs.random.Next(choices.Length);
+            Say(choices[i]);
+            return choices[i];
+        }
+
+        public async Task<string> Ask(IAnswerer answerer, string message, string[] options)
+        {
+            await Task.Delay(500);
+            Say(message);
+            var res = await answerer.Answer(options);
+            return res;
         }
     }
 
