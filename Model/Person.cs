@@ -37,7 +37,7 @@ namespace Exam2_MustafaSenturk.Model
         {
             if (image != null)
             {
-                dialogBubble = new DialogBuble(image, this, this.Image.Width, -this.Image.Height);
+                dialogBubble = new DialogBuble(image, this, this.Image.Width / 2, -this.Image.Height / 2);
             }
             else
             {
@@ -111,13 +111,14 @@ namespace Exam2_MustafaSenturk.Model
         }
         public async Task<string> Answer(string[] choices)
         {
-            await Task.Delay(1500);
+            await Task.Delay(500);
             if (choices.Length == 0)
             {
                 return Dialogs.GetRaction(Dialogs.Reactions.Annoyed);
             }
             int i = Dialogs.random.Next(choices.Length);
             Say(choices[i]);
+            await Task.Delay(800);
             return choices[i];
         }
 
@@ -126,6 +127,7 @@ namespace Exam2_MustafaSenturk.Model
             await Task.Delay(500);
             Say(message);
             var res = await answerer.Answer(options);
+            await Task.Delay(500);
             return res;
         }
     }

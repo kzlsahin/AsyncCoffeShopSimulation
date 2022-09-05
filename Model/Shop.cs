@@ -114,22 +114,33 @@ namespace Exam2_MustafaSenturk.Model
                 client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
                 client.Go();
                 await Task.Delay(5000);
-                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client = CreateClientPerson("Kenan", Image.FromFile(@"images\Person.png"), this);
                 client.Go();
 
                 await Task.Delay(5000);
-                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client = CreateClientPerson("Erol", Image.FromFile(@"images\Person.png"), this);
                 client.Go();
 
                 await Task.Delay(5000);
-                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client = CreateClientPerson("Beşir", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
+
+                await Task.Delay(4000);
+                client = CreateClientPerson("Taygun", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
+
+
+                await Task.Delay(4000);
+                client = CreateClientPerson("Erdem", Image.FromFile(@"images\Person.png"), this);
                 client.Go();
 
                 await Task.Delay(5000);
-                client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
+                client = CreateClientPerson("Aras", Image.FromFile(@"images\Person.png"), this);
                 client.Go();
 
-
+                await Task.Delay(5000);
+                client = CreateClientPerson("Emre", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
             }
             );
         }
@@ -218,16 +229,17 @@ namespace Exam2_MustafaSenturk.Model
         {
         }
 
-        public void HandleOrder(Order order, ShopWorker worker)
+        public bool HandleOrder(Order order, ShopWorker worker)
         {
             OrdersInProgress.Add(order);
             if (IdleShopWorkers.Count() > 0)
             {
                 RunningTasks.Add(IdleShopWorkers[0].PrepareOrder(order));
+                return true;
             }
             else
             {
-                RunningTasks.Add(worker.PrepareOrder(order));
+                return false;
             }
         }
 

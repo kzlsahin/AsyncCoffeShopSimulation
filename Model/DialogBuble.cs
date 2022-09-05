@@ -20,7 +20,7 @@ namespace Exam2_MustafaSenturk.Model
 
         IAsset? BondedAsset = null;
         public string Text { get; set; } = "   initted";
-        public float FontSize { get; set; } = 10f;
+        public float FontSize { get; set; } = 8f;
         public SolidBrush brush { get; set; } = new(Color.Black);
 
         StringFormat stringFormat = new StringFormat();

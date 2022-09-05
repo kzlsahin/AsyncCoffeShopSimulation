@@ -21,9 +21,9 @@ namespace Exam2_MustafaSenturk.Model
         }
         public async void Go()
         {
+            await Task.Delay(1500);
             var station = await this.GoToAvailableStation();
             this.CheckoutStation = station;
-            await Task.Delay(1500);
             string answer = String.Empty;
             string[] options = new string[] { "yes!"};
             if (this.CheckoutStation != null)
@@ -46,6 +46,7 @@ namespace Exam2_MustafaSenturk.Model
         public async void StartOrdering(ShopWorker worker)
         {
             await worker.requestAttention(this);
+            //when ordering is finished
             Shop.SendAssetToSpace(this, new Space(this.PosX - 100, this.PosY + 300, SpaceStatus.Free));
             CheckoutStation.ClientSpace.Status = SpaceStatus.Free;
             CheckoutStation = null;
@@ -58,9 +59,8 @@ namespace Exam2_MustafaSenturk.Model
             CheckoutStation? station = this.Shop.GetAvailableStationForClients();
             if (station == null)
             {
-                await Task.Delay(2000);
-                await GoToAvailableStation();
-                return null;
+                return await GoToAvailableStation();
+                
             }
             this.Shop.SendAssetToSpace(this, station.ClientSpace);
             return station;
