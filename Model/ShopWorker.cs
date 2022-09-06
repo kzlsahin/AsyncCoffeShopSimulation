@@ -38,7 +38,7 @@ namespace Exam2_MustafaSenturk.Model
             Shop = shop;
             Say($"My name is {Name}");
         }
-        public bool TakeControlOfCheckoutStation(CheckoutStation? station = null)
+        public async Task<bool> TakeControlOfCheckoutStation(CheckoutStation? station = null)
         {
             TogleIdleStatus();
             if (station == null)
@@ -49,19 +49,23 @@ namespace Exam2_MustafaSenturk.Model
             {
                 return false;
             }
-            
+            await this.Shop.SendPersonToSpace(this, station);
             bool isControlTaken = station.TakeControl(this);
-
             if (isControlTaken)
             {
-                CheckoutStation = station;
-                this.Shop.SendAssetToSpace(this, station);
+                CheckoutStation = station;                
                 return true;
             }
+            else
+            {
+                await GoToKitchen();
+            }
+
+            
             return false;
         }
 
-        public bool leaveControlOFCheckoutStation()
+        public bool leaveControlOfCheckoutStation()
         {
             if (CheckoutStation != null)
             {
@@ -70,6 +74,21 @@ namespace Exam2_MustafaSenturk.Model
                 return true;
             }        
             return false;
+        }
+
+
+        public async Task GoToKitchen()
+        {
+            if (this.CheckoutStation != null)
+            {
+                leaveControlOfCheckoutStation();
+            }
+            bool isGone = await this.Shop.GoToFreeSpace(this);
+
+            if (isGone)
+            {
+                //Say("Tezgahta Bekliyorum");
+            }
         }
         public async Task requestAttention(IAnswerer client)
         {
@@ -86,30 +105,17 @@ namespace Exam2_MustafaSenturk.Model
             this.CheckoutStation.RegisterNewOrder(order, this);
             await AskProduct(client);
             //await GetPayment(client);
-            if (!HandleOrder())
+            bool isOrderHandled = HandleOrder();
+            if (isOrderHandled)
+            {
+                Say("Next please!");
+            }
+            else
             {
                 this.Shop.OrdersInProgress.Add(order);
                 this.PrepareOrder(order, true);
             }
-            else
-            {
-                Say("Next please!");
-            }
         }
-
-        public void GoToKitchen()
-        {
-            if(this.CheckoutStation != null)
-            {
-                leaveControlOFCheckoutStation();
-            }
-            
-            if (this.Shop.GoToFreeSpace(this))
-            {
-                //Say("Tezgahta Bekliyorum");
-            }
-        }
-
         private CheckoutStation? CheckForEmptyStation()
         {
             CheckoutStation? station = this.Shop.GetEmptyStation();
@@ -125,7 +131,7 @@ namespace Exam2_MustafaSenturk.Model
             }
             string choice;
 
-            Say("  We have these products.\n   Which one would you like?");
+            Say("  What would you like?");
             await Task.Delay(1000);
             List<string> productChoices = new();
             int counter = 1;
@@ -154,14 +160,14 @@ namespace Exam2_MustafaSenturk.Model
             string choice;
 
             Say("And Additives?\nWould you like additives?");
-            Task.Delay(500);
+            await Task.Delay(500);
             int counter = 1;
             List<string> additiveChoices = new();
             foreach (KeyValuePair<AdditiveType, double> additive in Shop.Products.additiveList)
             {
                 Say($"\n {counter++}. {additive.Key} with price {additive.Value} \n");
                 additiveChoices.Add(additive.Key.ToString() );
-                Task.Delay(500);
+                await Task.Delay(500);
             }
 
             choice = await Ask(client, "what is your choice?", additiveChoices.ToArray());
@@ -197,7 +203,7 @@ namespace Exam2_MustafaSenturk.Model
         {
             if (CheckoutStation != null)
             {
-                leaveControlOFCheckoutStation();
+                leaveControlOfCheckoutStation();
             }
             if( self == false)
             {
@@ -210,21 +216,33 @@ namespace Exam2_MustafaSenturk.Model
                 Console.WriteLine($"\n < {this.Name} is preparing {product.productName} > \n  for the order of {order.OwnerName}\n");
                 await Task.Delay(product.ProductionTime);
             }*/
-            GoToKitchen();
-            Say($"I'm working for order of {order.OwnerName}");
-            await Task.Delay(12000);
+            await GoToKitchen();
+            Say($"Preparing order of {order.OwnerName}");
+            await Task.Delay(6000);
             await DeliverOrder(order);
             TogleIdleStatus();
+            Say($"{order.OrderId} is delivered\n Am I idle? {this.IsIdle}");
             CheckoutStation? station = CheckForEmptyStation();
             if(station != null)
             {
                 TakeControlOfCheckoutStation(station);
+            } else
+            {
+                await GoToKitchen();
             }
         }
         private async Task DeliverOrder(Order order)
         {
-            Shop.DeliverOrder(order);
-            Say($"complated order {order.OrderId}");
+            bool isAtDeliverySpace = await this.Shop.SendPersonToSpace(this, Shop.DeliverySpace);
+            Say($"{order.OwnerName}, order is rady to take ");
+            if (isAtDeliverySpace == false)
+            {
+                await Task.Delay(500);
+                await DeliverOrder(order);
+                return;
+            }
+            await Task.Delay(5000);
+            Shop.DeliverOrder(order);            
         }
 
 

@@ -47,7 +47,7 @@ namespace Exam2_MustafaSenturk.Model
         {
             await worker.requestAttention(this);
             //when ordering is finished
-            Shop.SendAssetToSpace(this, new Space(this.PosX - 100, this.PosY + 300, SpaceStatus.Free));
+            Shop.SendPersonToSpace(this, new Space(this.PosX - 100, this.PosY + 300, SpaceStatus.Free));
             CheckoutStation.ClientSpace.Status = SpaceStatus.Free;
             CheckoutStation = null;
             Say("Thanks !");
@@ -62,7 +62,7 @@ namespace Exam2_MustafaSenturk.Model
                 return await GoToAvailableStation();
                 
             }
-            this.Shop.SendAssetToSpace(this, station.ClientSpace);
+            this.Shop.SendPersonToSpace(this, station.ClientSpace);
             return station;
         }
     }

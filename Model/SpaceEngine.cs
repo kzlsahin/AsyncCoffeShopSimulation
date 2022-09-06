@@ -68,6 +68,10 @@ namespace Exam2_MustafaSenturk.Model
                 {
                     asset.CurrentSpace = destination;
                     Movements.Remove(asset);
+                    if(asset is Person)
+                    {
+                        ((Person)asset).IsOnWay = false;
+                    }
                 }
                 else
                 {

@@ -24,6 +24,7 @@ namespace Exam2_MustafaSenturk.Model
 
         public SpaceEngine spaceEngine = new SpaceEngine();
         public Space Entrance { get; } = new Space(250, 450, SpaceStatus.Entrence);
+        public Space DeliverySpace { get; } = new Space(10, 220, SpaceStatus.Free);
 
         Main mainForm;
         public DialogBuble Prompter;
@@ -37,9 +38,6 @@ namespace Exam2_MustafaSenturk.Model
             ShopWorker worker3 = new ShopWorker("Harun", Image.FromFile(@"images\Person.png"), this);
             ShopWorker worker4 = new ShopWorker("Kemal", Image.FromFile(@"images\Person.png"), this);
             ShopWorker worker5 = new ShopWorker("Mustafa", Image.FromFile(@"images\Person.png"), this);
-
-            CreateClientPerson("Ahmet", Image.FromFile(@"images\Person.png"), this);
-            CreateClientPerson("Mesut", Image.FromFile(@"images\Person.png"), this);
 
             Prompter = new(Properties.PublishProfiles.Resources.DialogBuble_x64, 0, 0);
             assets = new List<IAsset>
@@ -105,12 +103,18 @@ namespace Exam2_MustafaSenturk.Model
           
             Task.Run( async () =>
             {
-                Task.Delay(2000);
-                ActivateClients();
 
                 ClientPerson client;
-                await Task.Delay(5000);
+                await Task.Delay(3000);
+
+                client = CreateClientPerson("Ahmet", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
+                await Task.Delay(2000);
                 
+                client = CreateClientPerson("Mesut", Image.FromFile(@"images\Person.png"), this);
+                client.Go();
+                await Task.Delay(3000);
+
                 client = CreateClientPerson("Melih", Image.FromFile(@"images\Person.png"), this);
                 client.Go();
                 await Task.Delay(5000);
@@ -167,11 +171,21 @@ namespace Exam2_MustafaSenturk.Model
             spaceEngine.AddAsset(asset);
             mainForm.AddAssetToScene(asset);
         }
-        public void SendAssetToSpace(IAsset asset, ISpace space)
+        public async Task<bool> SendPersonToSpace(Person person, ISpace space)
         {
-            spaceEngine.AddDestination(asset, space);
-            asset.CurrentSpace.Status = SpaceStatus.Free;
+            if(space.Status == SpaceStatus.Reserved)
+            {
+                return false;
+            }
+            person.IsOnWay = true;
+            person.CurrentSpace.Status = SpaceStatus.Free;
             space.Status = SpaceStatus.Reserved;
+            spaceEngine.AddDestination(person, space);
+            while (person.IsOnWay)
+            {
+                await Task.Delay(600);
+            }
+            return true;
         }
 
         private ISpace? GetFreeSpace()
@@ -182,15 +196,13 @@ namespace Exam2_MustafaSenturk.Model
             }
             return null;
         }
-        public bool GoToFreeSpace(IAsset asset)
+        public async Task<bool> GoToFreeSpace(Person person)
         {
             ISpace? space = GetFreeSpace();
 
             if (space == null) return false;
 
-            SendAssetToSpace(asset, space);
-
-            return true;
+            return await SendPersonToSpace(person, space);
         }
 
 
