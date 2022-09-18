@@ -1,6 +1,8 @@
 ## A Simulation of a Coffee Shop
 
-With workers handling customers and randomly spawning customers.
+With workers handling customers and randomly spawning customers,
+
+Independent agents interacting eachother. 
 
 https://www.youtube.com/watch?v=DBuh8PU3SPY
 
